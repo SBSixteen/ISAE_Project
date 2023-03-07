@@ -12,7 +12,6 @@ public:
 	GameModes();
 	static string Caesar();
 	static string Caesar_E(int key, string p);
-
 };
 
 #pragma once

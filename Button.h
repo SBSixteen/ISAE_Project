@@ -10,7 +10,7 @@ using namespace std;
 class Button
 {
 public:
-	SDL_Texture* Texture; 
+	SDL_Texture* Texture;
 	SDL_Texture* Texture_Inactive;
 	SDL_Rect sR;
 	bool sel, sound, toggle;
@@ -24,4 +24,3 @@ public:
 	void toggleActive();
 	~Button();
 };
-

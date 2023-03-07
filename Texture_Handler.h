@@ -8,4 +8,3 @@ public:
 	static SDL_Texture* Load(const char* path, SDL_Renderer* R);
 	static void Draw(SDL_Texture* T, SDL_Rect sR, SDL_Rect dR, SDL_Renderer* R);
 };
-

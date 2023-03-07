@@ -11,12 +11,14 @@
 #include "Mouse.h"
 #include <string>
 #include "GameModes.h"
+#include <vector>
 
 using namespace std;
 
 SDL_Renderer* R;
 
 Button* button[6];
+
 Mouse* MenuMouse;
 
 void menuUpdate() {
@@ -134,6 +136,9 @@ int main() {
 	SDL_Texture* BG = Texture_Handler::Load("Assets/Block/White.png", R);
 	SDL_Texture* Info_Encrypt = Texture_Handler::Load("Assets/Active/Info_Encrypt.png", R);
 	SDL_Texture* Info_Decrypt = Texture_Handler::Load("Assets/Active/Info_Decrypt.png", R);
+	SDL_Texture* NONE = Texture_Handler::Load("Assets/Block/Unknown.png", R);
+	SDL_Texture* CRCT = Texture_Handler::Load("Assets/Block/Correct.png", R);
+	SDL_Texture* WRNG = Texture_Handler::Load("Assets/Block/Wrong.png", R);
 
 	//Music
 	Mix_Music* Gameplay = Mix_LoadMUS("Sounds/ID3.mp3");
@@ -145,6 +150,18 @@ int main() {
 
 	Mix_PlayMusic(Gameplay, -1);
 
+	vector<SDL_Rect> rcnts;
+	vector<int> list;
+
+	for (int i = 0; i < 5; i++) {
+		SDL_Rect G;
+		G.x = 1400 + i * 96;
+		G.y = 15;
+		G.w = 64;
+		G.h = 64;
+		rcnts.push_back(G);
+		list.push_back(-1);
+	}
 
 	SDL_Rect Info;
 	Info.x = 1395;
@@ -205,7 +222,6 @@ int main() {
 
 					//Logo
 					if (button[5]->sel) {
-
 						Mix_HaltMusic();
 
 						int m = rand() % 3;
@@ -216,7 +232,6 @@ int main() {
 						SDL_Rect* key = new SDL_Rect();
 						SDL_Rect* tm = new SDL_Rect();
 						SDL_Rect* ui = new SDL_Rect();
-
 
 						SDL_Surface* TIME;
 						SDL_Surface* ANSWER;
@@ -236,9 +251,6 @@ int main() {
 
 						while (playstate)
 						{
-
-
-
 							r = rand() % 256;
 							g = rand() % 256;
 							b = rand() % 256;
@@ -254,16 +266,14 @@ int main() {
 							CIPHERTEXT = TTF_RenderText_Solid(TEXT, res.c_str(), textColor); //Surface = Canvas
 							KEY = TTF_RenderText_Solid(TEXT, to_string(Key).c_str(), textColor); //Surface = Canvas
 
-
 							DP_CT = SDL_CreateTextureFromSurface(R, CIPHERTEXT);
 							DP_KY = SDL_CreateTextureFromSurface(R, KEY);
-
 
 							SDL_QueryTexture(DP_CT, NULL, NULL, &name->w, &name->h);
 							SDL_QueryTexture(DP_KY, NULL, NULL, &key->w, &key->h);
 
 							name->x = WIDTH / 2 - name->w / 2; name->y = HEIGHT / 3 - name->h / 2;
-							key->x = WIDTH / 2 - key->w / 2; key->y = HEIGHT / 4 - key->h / 2;
+							key->x = WIDTH / 2 - key->w / 2; key->y = HEIGHT / 4 - 100;
 
 							string timekeep = "";
 
@@ -275,10 +285,8 @@ int main() {
 							string inputText = "";
 							bool done = false;
 
-
 							while (rehash) {
-
-								if (Mix_Playing == 0) {
+								if (Mix_PlayingMusic() == 0) {
 									m = rand() % 3;
 									Mix_PlayMusic(G[m], 0);
 								}
@@ -314,25 +322,24 @@ int main() {
 
 											cout << inputText << endl;
 											cout << x << endl;
-
+											list.pop_back();
 											if (x == inputText) {
 												cout << "Correct" << endl;
-												//SDL_SetRenderDrawColor(R, 0, 255, 0, 255);
+												list.insert(list.begin(), 1);
 											}
 											else {
 												cout << "Try Again" << endl;
 												//SDL_SetRenderDrawColor(R, 255, 0, 0, 255);
+												list.insert(list.begin(), 0);
 											}
 
 											rehash = false;
-
 										}
 
 										if (e.key.keysym.sym == SDLK_F11)
 										{
 											SDL_MinimizeWindow(window);
 										}
-
 
 										if (e.key.keysym.sym == SDLK_ESCAPE)
 										{
@@ -358,6 +365,18 @@ int main() {
 									SDL_RenderCopy(R, DP_UI, NULL, ui);
 									SDL_FreeSurface(ANSWER);
 									SDL_DestroyTexture(DP_UI);
+								}
+
+								for (int i = 0; i < 5; i++) {
+									if (list.at(i) == -1) {
+										SDL_RenderCopy(R, NONE, NULL, &rcnts.at(i));
+									}
+									if (list.at(i) == 0) {
+										SDL_RenderCopy(R, WRNG, NULL, &rcnts.at(i));
+									}
+									if (list.at(i) == 1) {
+										SDL_RenderCopy(R, CRCT, NULL, &rcnts.at(i));
+									}
 								}
 
 								SDL_RenderCopy(R, DP_CT, NULL, name);
@@ -398,6 +417,7 @@ int main() {
 							SDL_FreeSurface(CIPHERTEXT);
 							SDL_FreeSurface(KEY);
 						}
+						Mix_HaltMusic();
 					}
 				}
 			}
