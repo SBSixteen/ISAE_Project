@@ -1,3 +1,5 @@
+#pragma once
+
 #include "GameModes.h"
 
 GameModes::GameModes()
@@ -32,4 +34,16 @@ string GameModes::Caesar()
 	file.close();
 
 	return result;
+}
+
+string GameModes::Caesar_E(int key, string c) {
+
+
+	for (int i = 0; i < c.length(); i++) {
+
+		c[i] = (c[i] + key - 65) % 26;
+		c[i] = c[i] + 65;
+	}
+
+	return c;
 }

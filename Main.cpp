@@ -1,3 +1,4 @@
+#pragma once
 #define SDL_MAIN_HANDLED
 #include "Main.h"
 #include "SDL_ttf.h"
@@ -89,7 +90,7 @@ int main() {
 		cout << "SDL Failed to initialize. Error Code : " << SDL_GetError() << endl;
 	}
 
-	SDL_Window* window = SDL_CreateWindow("DESOLATION : Sins of our Forefathers | Version 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
+	SDL_Window* window = SDL_CreateWindow("ReHASH : Proving Grounds | Version 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
 	WindowSurface = SDL_GetWindowSurface(window); //Creates Window Panel
 
 	if (window == NULL) {
@@ -108,7 +109,7 @@ int main() {
 		std::cout << "Renderer Initialized" << std::endl;
 	}
 
-	SDL_SetWindowFullscreen(window, false);
+	SDL_SetWindowFullscreen(window, true);
 
 	bool fullscreen = false;
 	bool isRunning = true;
@@ -136,7 +137,14 @@ int main() {
 
 	//Music
 	Mix_Music* Gameplay = Mix_LoadMUS("Sounds/ID3.mp3");
+	Mix_Music* G[3];// Mix_LoadMUS("Sounds/ID3.mp3");
+
+	G[0] = Mix_LoadMUS("Sounds/ID4.mp3");
+	G[1] = Mix_LoadMUS("Sounds/ID2.mp3");
+	G[2] = Mix_LoadMUS("Sounds/ID1.mp3");
+
 	Mix_PlayMusic(Gameplay, -1);
+
 
 	SDL_Rect Info;
 	Info.x = 1395;
@@ -198,82 +206,197 @@ int main() {
 					//Logo
 					if (button[5]->sel) {
 
-						string res = GameModes::Caesar();
-						rehash = true;
-						int Key = rand() % 26;
+						Mix_HaltMusic();
 
-						int seconds = 35, minutes = 59, hours = 0; int frames = 0;
+						int m = rand() % 3;
+
+						Mix_PlayMusic(G[m], 0);
 
 						SDL_Rect* name = new SDL_Rect();
 						SDL_Rect* key = new SDL_Rect();
 						SDL_Rect* tm = new SDL_Rect();
+						SDL_Rect* ui = new SDL_Rect();
 
-						SDL_Surface* CIPHERTEXT = TTF_RenderText_Solid(TEXT, res.c_str(), { 255,255,255 }); //Surface = Canvas
-						SDL_Surface* KEY = TTF_RenderText_Solid(TEXT, to_string(Key).c_str(), { 255,255,255 }); //Surface = Canvas
+
 						SDL_Surface* TIME;
+						SDL_Surface* ANSWER;
+						SDL_Surface* KEY;
+						SDL_Surface* CIPHERTEXT;
 
-						SDL_Texture* DP_CT = SDL_CreateTextureFromSurface(R, CIPHERTEXT);
-						SDL_Texture* DP_KY = SDL_CreateTextureFromSurface(R, KEY);
+						SDL_Texture* DP_CT;
+						SDL_Texture* DP_KY;
 						SDL_Texture* DP_TM;
+						SDL_Texture* DP_UI;
 
-						SDL_QueryTexture(DP_CT, NULL, NULL, &name->w, &name->h);
-						SDL_QueryTexture(DP_KY, NULL, NULL, &key->w, &key->h);
+						bool playstate = true;
+						int seconds = 0, minutes = 0, hours = 0; int frames = 0;  int score = 0;
 
-						name->x = WIDTH / 2 - name->w / 2; name->y = HEIGHT / 3 - name->h / 2;
-						key->x = WIDTH / 2 - key->w / 2; key->y = HEIGHT / 4 - key->h / 2;
+						int unsigned r, g, b;
+						SDL_Color textColor;
 
-						string timekeep = "";
+						while (playstate)
+						{
 
-						while (rehash) {
 
-							frame_start = SDL_GetTicks();
 
-							while (SDL_PollEvent(&e)) {
-								switch (e.type) {
-								case SDL_QUIT:
-									break;
+							r = rand() % 256;
+							g = rand() % 256;
+							b = rand() % 256;
+
+							textColor.r = r;
+							textColor.g = g;
+							textColor.b = b;
+
+							string res = GameModes::Caesar();
+							rehash = true;
+							int Key = rand() % 26;
+
+							CIPHERTEXT = TTF_RenderText_Solid(TEXT, res.c_str(), textColor); //Surface = Canvas
+							KEY = TTF_RenderText_Solid(TEXT, to_string(Key).c_str(), textColor); //Surface = Canvas
+
+
+							DP_CT = SDL_CreateTextureFromSurface(R, CIPHERTEXT);
+							DP_KY = SDL_CreateTextureFromSurface(R, KEY);
+
+
+							SDL_QueryTexture(DP_CT, NULL, NULL, &name->w, &name->h);
+							SDL_QueryTexture(DP_KY, NULL, NULL, &key->w, &key->h);
+
+							name->x = WIDTH / 2 - name->w / 2; name->y = HEIGHT / 3 - name->h / 2;
+							key->x = WIDTH / 2 - key->w / 2; key->y = HEIGHT / 4 - key->h / 2;
+
+							string timekeep = "";
+
+							string x = GameModes::Caesar_E(Key, res);
+
+							SDL_StartTextInput();
+
+							bool renderText = false;
+							string inputText = "";
+							bool done = false;
+
+
+							while (rehash) {
+
+								if (Mix_Playing == 0) {
+									m = rand() % 3;
+									Mix_PlayMusic(G[m], 0);
 								}
-							}
 
-							timekeep = time_string(seconds,minutes,hours);
-							TIME = TTF_RenderText_Solid(TEXT_S, timekeep.c_str(), { 255,255,255 }); //Surface = Canvas
-							DP_TM = SDL_CreateTextureFromSurface(R, TIME);
-							SDL_QueryTexture(DP_TM, NULL, NULL, &tm->w, &tm->h);
-							tm->x = WIDTH / 2 - tm->w/2; tm->y = 15;
+								frame_start = SDL_GetTicks();
+
+								while (SDL_PollEvent(&e)) {
+									if (e.type == SDL_TEXTINPUT)
+									{
+										//Accept Keyboard Input
+										if (!(SDL_GetModState() & KMOD_CTRL && (e.text.text[0] == 'c' || e.text.text[0] == 'C' || e.text.text[0] == 'v' || e.text.text[0] == 'V')))
+										{
+											//Append character
+											inputText += e.text.text;
+											renderText = true;
+										}
+									}
+									else if (e.type == SDL_KEYDOWN)
+									{
+										//Handle backspace
+										if (e.key.keysym.sym == SDLK_BACKSPACE && inputText.length() > 0)
+										{
+											//Pop off character
+											inputText.pop_back();
+											renderText = true;
+										}
+										//Submit Name
+										if (e.key.keysym.sym == SDLK_RETURN && inputText.length() > 0)
+										{
+											for (int i = 0; i < inputText.length(); i++) {
+												inputText[i] = inputText[i] & ~' ';
+											}
+
+											cout << inputText << endl;
+											cout << x << endl;
+
+											if (x == inputText) {
+												cout << "Correct" << endl;
+												//SDL_SetRenderDrawColor(R, 0, 255, 0, 255);
+											}
+											else {
+												cout << "Try Again" << endl;
+												//SDL_SetRenderDrawColor(R, 255, 0, 0, 255);
+											}
+
+											rehash = false;
+
+										}
+
+										if (e.key.keysym.sym == SDLK_F11)
+										{
+											SDL_MinimizeWindow(window);
+										}
 
 
-							SDL_RenderClear(R);
-
-							SDL_RenderCopy(R, DP_CT, NULL, name);
-							SDL_RenderCopy(R, DP_KY, NULL, key);
-							SDL_RenderCopy(R, DP_TM, NULL, tm);
-
-							SDL_RenderPresent(R);
-
-							if (frames % 144 == 0) {
-								seconds++;
-								if ((seconds) % 60 == 0) {
-									minutes++;
-									seconds = 0;
-									if (minutes % 60 == 0) {
-										hours++;
-										minutes = 0;
+										if (e.key.keysym.sym == SDLK_ESCAPE)
+										{
+											rehash = false;
+											playstate = false;
+										}
 									}
 								}
+
+								timekeep = time_string(seconds, minutes, hours);
+								TIME = TTF_RenderText_Solid(TEXT_S, timekeep.c_str(), { 255,255,255 }); //Surface = Canvas
+								DP_TM = SDL_CreateTextureFromSurface(R, TIME);
+								SDL_QueryTexture(DP_TM, NULL, NULL, &tm->w, &tm->h);
+								tm->x = WIDTH / 2 - tm->w / 2; tm->y = 15;
+
+								SDL_RenderClear(R);
+
+								if (renderText) {
+									ANSWER = TTF_RenderText_Solid(TEXT, inputText.c_str(), { 255,255,255 }); //Surface = Canvas
+									DP_UI = SDL_CreateTextureFromSurface(R, ANSWER);
+									SDL_QueryTexture(DP_UI, NULL, NULL, &ui->w, &ui->h);
+									ui->x = WIDTH / 2 - ui->w / 2; ui->y = HEIGHT / 2;
+									SDL_RenderCopy(R, DP_UI, NULL, ui);
+									SDL_FreeSurface(ANSWER);
+									SDL_DestroyTexture(DP_UI);
+								}
+
+								SDL_RenderCopy(R, DP_CT, NULL, name);
+								SDL_RenderCopy(R, DP_KY, NULL, key);
+								SDL_RenderCopy(R, DP_TM, NULL, tm);
+
+								SDL_RenderPresent(R);
+
+								if (frames % 144 == 0) {
+									seconds++;
+									if ((seconds) % 60 == 0) {
+										minutes++;
+										seconds = 0;
+										if (minutes % 60 == 0) {
+											hours++;
+											minutes = 0;
+										}
+									}
+								}
+
+								if (frames > 1440) {
+									frames = 0;
+								}
+
+								SDL_FreeSurface(TIME);
+								SDL_DestroyTexture(DP_TM);
+
+								frame_time = SDL_GetTicks() - frame_start;
+
+								SDL_Delay(delay - frame_time);
+
+								frames++;
 							}
 
-							if (frames > 1440) {
-								frames = 0;
-							}
-
-							SDL_FreeSurface(TIME);
-							SDL_DestroyTexture(DP_TM);
-
-							frame_time = SDL_GetTicks() - frame_start;
-
-							SDL_Delay(delay - frame_time);
-							
-							frames++;
+							SDL_StopTextInput();
+							SDL_DestroyTexture(DP_CT);
+							SDL_DestroyTexture(DP_KY);
+							SDL_FreeSurface(CIPHERTEXT);
+							SDL_FreeSurface(KEY);
 						}
 					}
 				}
