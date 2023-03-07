@@ -111,7 +111,8 @@ int main() {
 		std::cout << "Renderer Initialized" << std::endl;
 	}
 
-	SDL_SetWindowFullscreen(window, true);
+	SDL_SetWindowFullscreen(window, false);
+	SDL_SetWindowResizable(window, SDL_FALSE);
 
 	bool fullscreen = false;
 	bool isRunning = true;
@@ -249,18 +250,31 @@ int main() {
 						int unsigned r, g, b;
 						SDL_Color textColor;
 
+						SDL_Event f;
+
 						while (playstate)
 						{
+							while (SDL_PollEvent(&e)) {
+								switch (e.type) {
+								case SDL_QUIT:
+									break;
+								}
+							}
+
+							rehash = true;
+
 							r = rand() % 256;
 							g = rand() % 256;
 							b = rand() % 256;
+
+							//cout << SDL_GetErrorMsg() << endl;
 
 							textColor.r = r;
 							textColor.g = g;
 							textColor.b = b;
 
 							string res = GameModes::Caesar();
-							rehash = true;
+
 							int Key = rand() % 26;
 
 							CIPHERTEXT = TTF_RenderText_Solid(TEXT, res.c_str(), textColor); //Surface = Canvas
@@ -279,42 +293,47 @@ int main() {
 
 							string x = GameModes::Caesar_E(Key, res);
 
-							SDL_StartTextInput();
-
 							bool renderText = false;
 							string inputText = "";
-							bool done = false;
 
 							while (rehash) {
+
 								if (Mix_PlayingMusic() == 0) {
 									m = rand() % 3;
 									Mix_PlayMusic(G[m], 0);
 								}
 
-								frame_start = SDL_GetTicks();
+								cout << SDL_GetError() << " | Inside Text Input " << endl;
 
-								while (SDL_PollEvent(&e)) {
-									if (e.type == SDL_TEXTINPUT)
+								SDL_RenderClear(R);
+
+								cout << SDL_GetError() << " | After Render Clear " << endl;
+
+
+								while (SDL_PollEvent(&f) != 0) {
+									cout << SDL_GetError() << " | Polling Start " << endl;
+
+									if (f.type == SDL_TEXTINPUT)
 									{
 										//Accept Keyboard Input
-										if (!(SDL_GetModState() & KMOD_CTRL && (e.text.text[0] == 'c' || e.text.text[0] == 'C' || e.text.text[0] == 'v' || e.text.text[0] == 'V')))
+										if (!(SDL_GetModState() & KMOD_CTRL && (f.text.text[0] == 'c' || f.text.text[0] == 'C' || f.text.text[0] == 'v' || f.text.text[0] == 'V')))
 										{
 											//Append character
-											inputText += e.text.text;
+											inputText += f.text.text;
 											renderText = true;
 										}
 									}
-									else if (e.type == SDL_KEYDOWN)
+									else if (f.type == SDL_KEYDOWN)
 									{
 										//Handle backspace
-										if (e.key.keysym.sym == SDLK_BACKSPACE && inputText.length() > 0)
+										if (f.key.keysym.sym == SDLK_BACKSPACE && inputText.length() > 0)
 										{
 											//Pop off character
 											inputText.pop_back();
 											renderText = true;
 										}
 										//Submit Name
-										if (e.key.keysym.sym == SDLK_RETURN && inputText.length() > 0)
+										if (f.key.keysym.sym == SDLK_RETURN && inputText.length() > 0)
 										{
 											for (int i = 0; i < inputText.length(); i++) {
 												inputText[i] = inputText[i] & ~' ';
@@ -336,35 +355,40 @@ int main() {
 											rehash = false;
 										}
 
-										if (e.key.keysym.sym == SDLK_F11)
+										if (f.key.keysym.sym == SDLK_F11)
 										{
 											SDL_MinimizeWindow(window);
 										}
 
-										if (e.key.keysym.sym == SDLK_ESCAPE)
+										if (f.key.keysym.sym == SDLK_ESCAPE)
 										{
 											rehash = false;
 											playstate = false;
+											Mix_HaltMusic();
+											Mix_PlayMusic(Gameplay, -1);
 										}
 									}
-								}
 
+									cout << SDL_GetError() << " | Polling End " << endl;
+								}
 								timekeep = time_string(seconds, minutes, hours);
 								TIME = TTF_RenderText_Solid(TEXT_S, timekeep.c_str(), { 255,255,255 }); //Surface = Canvas
 								DP_TM = SDL_CreateTextureFromSurface(R, TIME);
 								SDL_QueryTexture(DP_TM, NULL, NULL, &tm->w, &tm->h);
 								tm->x = WIDTH / 2 - tm->w / 2; tm->y = 15;
 
-								SDL_RenderClear(R);
+								cout << SDL_GetError() << " | TimeTexture " << endl;
 
-								if (renderText) {
+								if (inputText.length() > 0) {
 									ANSWER = TTF_RenderText_Solid(TEXT, inputText.c_str(), { 255,255,255 }); //Surface = Canvas
 									DP_UI = SDL_CreateTextureFromSurface(R, ANSWER);
 									SDL_QueryTexture(DP_UI, NULL, NULL, &ui->w, &ui->h);
 									ui->x = WIDTH / 2 - ui->w / 2; ui->y = HEIGHT / 2;
+									cout << SDL_GetError() << " | User Answer " << endl;
 									SDL_RenderCopy(R, DP_UI, NULL, ui);
 									SDL_FreeSurface(ANSWER);
 									SDL_DestroyTexture(DP_UI);
+									cout << SDL_GetError() << " | Render User Answer " << endl;
 								}
 
 								for (int i = 0; i < 5; i++) {
@@ -377,13 +401,20 @@ int main() {
 									if (list.at(i) == 1) {
 										SDL_RenderCopy(R, CRCT, NULL, &rcnts.at(i));
 									}
+
+									cout << SDL_GetError() << " | Recents Bar " << endl;
 								}
 
 								SDL_RenderCopy(R, DP_CT, NULL, name);
+								cout << SDL_GetError() << " | Rendering CIPHERTEXT " << endl;
 								SDL_RenderCopy(R, DP_KY, NULL, key);
+								cout << SDL_GetError() << " | Render KEY " << endl;
 								SDL_RenderCopy(R, DP_TM, NULL, tm);
 
+								cout << SDL_GetError() << " | Render Time " << endl;
+
 								SDL_RenderPresent(R);
+								cout << SDL_GetError() << " | Render Present " << endl;
 
 								if (frames % 144 == 0) {
 									seconds++;
@@ -392,32 +423,24 @@ int main() {
 										seconds = 0;
 										if (minutes % 60 == 0) {
 											hours++;
-											minutes = 0;
 										}
 									}
 								}
 
-								if (frames > 1440) {
-									frames = 0;
-								}
+
+								SDL_RenderPresent(R);
+								cout << SDL_GetError() << " | Start of Texture Cleaning " << endl;
 
 								SDL_FreeSurface(TIME);
 								SDL_DestroyTexture(DP_TM);
 
-								frame_time = SDL_GetTicks() - frame_start;
 
-								SDL_Delay(delay - frame_time);
+								SDL_Delay(5);
 
 								frames++;
 							}
-
-							SDL_StopTextInput();
-							SDL_DestroyTexture(DP_CT);
-							SDL_DestroyTexture(DP_KY);
-							SDL_FreeSurface(CIPHERTEXT);
-							SDL_FreeSurface(KEY);
 						}
-						Mix_HaltMusic();
+						//Mix_HaltMusic();
 					}
 				}
 			}
