@@ -153,6 +153,8 @@ int main() {
 	int frames = 0;
 
 	TTF_Font* TEXT = TTF_OpenFont("DAGGERSQUARE.otf", 128);
+	TTF_Font* TEXT_S = TTF_OpenFont("DAGGERSQUARE.otf", 64);
+	TTF_Font* TEXT_XS = TTF_OpenFont("DAGGERSQUARE.otf", 32);
 
 	while (menu) {
 		frame_start = SDL_GetTicks();
@@ -195,20 +197,24 @@ int main() {
 
 					//Logo
 					if (button[5]->sel) {
+
 						string res = GameModes::Caesar();
 						rehash = true;
 						int Key = rand() % 26;
 
-						int seconds = 0, minutes = 0, hours = 0; int frames = 0;
+						int seconds = 35, minutes = 59, hours = 0; int frames = 0;
 
 						SDL_Rect* name = new SDL_Rect();
 						SDL_Rect* key = new SDL_Rect();
+						SDL_Rect* tm = new SDL_Rect();
 
 						SDL_Surface* CIPHERTEXT = TTF_RenderText_Solid(TEXT, res.c_str(), { 255,255,255 }); //Surface = Canvas
 						SDL_Surface* KEY = TTF_RenderText_Solid(TEXT, to_string(Key).c_str(), { 255,255,255 }); //Surface = Canvas
+						SDL_Surface* TIME;
 
 						SDL_Texture* DP_CT = SDL_CreateTextureFromSurface(R, CIPHERTEXT);
 						SDL_Texture* DP_KY = SDL_CreateTextureFromSurface(R, KEY);
+						SDL_Texture* DP_TM;
 
 						SDL_QueryTexture(DP_CT, NULL, NULL, &name->w, &name->h);
 						SDL_QueryTexture(DP_KY, NULL, NULL, &key->w, &key->h);
@@ -216,25 +222,37 @@ int main() {
 						name->x = WIDTH / 2 - name->w / 2; name->y = HEIGHT / 3 - name->h / 2;
 						key->x = WIDTH / 2 - key->w / 2; key->y = HEIGHT / 4 - key->h / 2;
 
+						string timekeep = "";
+
 						while (rehash) {
+
 							frame_start = SDL_GetTicks();
+
+							while (SDL_PollEvent(&e)) {
+								switch (e.type) {
+								case SDL_QUIT:
+									break;
+								}
+							}
+
+							timekeep = time_string(seconds,minutes,hours);
+							TIME = TTF_RenderText_Solid(TEXT_S, timekeep.c_str(), { 255,255,255 }); //Surface = Canvas
+							DP_TM = SDL_CreateTextureFromSurface(R, TIME);
+							SDL_QueryTexture(DP_TM, NULL, NULL, &tm->w, &tm->h);
+							tm->x = WIDTH / 2 - tm->w/2; tm->y = 15;
+
 
 							SDL_RenderClear(R);
 
 							SDL_RenderCopy(R, DP_CT, NULL, name);
 							SDL_RenderCopy(R, DP_KY, NULL, key);
+							SDL_RenderCopy(R, DP_TM, NULL, tm);
 
 							SDL_RenderPresent(R);
 
-							frame_time = SDL_GetTicks() - frame_start;
-
-							SDL_Delay(delay - frame_time);
-
-							frames++;
-
-							if (frames % 120 == 0) {
+							if (frames % 144 == 0) {
 								seconds++;
-								if (seconds + 1 % 60 == 0) {
+								if ((seconds) % 60 == 0) {
 									minutes++;
 									seconds = 0;
 									if (minutes % 60 == 0) {
@@ -243,6 +261,19 @@ int main() {
 									}
 								}
 							}
+
+							if (frames > 1440) {
+								frames = 0;
+							}
+
+							SDL_FreeSurface(TIME);
+							SDL_DestroyTexture(DP_TM);
+
+							frame_time = SDL_GetTicks() - frame_start;
+
+							SDL_Delay(delay - frame_time);
+							
+							frames++;
 						}
 					}
 				}
