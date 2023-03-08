@@ -21,7 +21,7 @@ Button* button[6];
 
 Mouse* MenuMouse;
 
-bool toggle_bg = false;
+bool toggle_bg = true;
 
 void menuUpdate() {
 	for (Button* n : button) {
@@ -121,6 +121,8 @@ int main() {
 	SDL_SetWindowFullscreen(window, SDL_FALSE);
 	SDL_SetWindowResizable(window, SDL_FALSE);
 
+
+
 	bool fullscreen = false;
 	bool isRunning = true;
 
@@ -190,6 +192,22 @@ int main() {
 	TTF_Font* TEXT = TTF_OpenFont("DAGGERSQUARE.otf", 128);
 	TTF_Font* TEXT_S = TTF_OpenFont("DAGGERSQUARE.otf", 64);
 	TTF_Font* TEXT_XS = TTF_OpenFont("DAGGERSQUARE.otf", 32);
+	TTF_Font* TEXT_XXS = TTF_OpenFont("DAGGERSQUARE.otf", 16);
+
+	SDL_Rect* V = new SDL_Rect();
+
+	SDL_Surface* Version;
+
+	SDL_Texture* DP_VR;
+
+	string ver = "ReHash 0.4a | Partial Resolution Support and Color Switch Update";
+
+	Version = TTF_RenderText_Solid(TEXT_XXS, ver.c_str(), {255,255,255}); //Surface = Canvas
+	DP_VR = SDL_CreateTextureFromSurface(R, Version);
+	SDL_QueryTexture(DP_VR, NULL, NULL, &V->w, &V->h);
+
+	V->x = WIDTH / 2 - (V->w/2);
+	V->y = 16;
 
 	SDL_Color UI_Color;
 	UI_Color.r = 255;
@@ -219,6 +237,7 @@ int main() {
 		SDL_RenderClear(R);
 		BG = Texture_Handler::Load(BG_Frame_Path.c_str(), R);
 		SDL_RenderCopy(R, BG, NULL, NULL);
+		SDL_RenderCopy(R, DP_VR, NULL, V);
 
 		while (SDL_PollEvent(&e)) {
 			switch (e.type) {
@@ -239,9 +258,11 @@ int main() {
 
 					//Logo
 					if (button[5]->sel) {
+						
 						Mix_HaltMusic();
 
 						int m = rand() % 3;
+						string ty = "";
 
 						Mix_PlayMusic(G[m], 0);
 
@@ -249,16 +270,19 @@ int main() {
 						SDL_Rect* key = new SDL_Rect();
 						SDL_Rect* tm = new SDL_Rect();
 						SDL_Rect* ui = new SDL_Rect();
+						SDL_Rect* type = new SDL_Rect();
 
 						SDL_Surface* TIME;
 						SDL_Surface* ANSWER;
 						SDL_Surface* KEY;
 						SDL_Surface* CIPHERTEXT;
+						SDL_Surface* TYPE;
 
 						SDL_Texture* DP_CT;
 						SDL_Texture* DP_KY;
 						SDL_Texture* DP_TM;
 						SDL_Texture* DP_UI;
+						SDL_Texture* DP_TY;
 
 						bool playstate = true;
 						int seconds = 0, minutes = 0, hours = 0; int frames = 0;  int score = 0;
@@ -308,6 +332,7 @@ int main() {
 								int k = rand() % 26;
 								Key = to_string(k);
 								x = GameModes::Caesar_E(k, res);
+								ty = "Caesar's Encryption";
 							}
 
 							if (s_gamemode == 1) {
@@ -316,19 +341,24 @@ int main() {
 								cout << "Key Made" << endl;
 								x = GameModes::Vignere_E(Key, res);
 								cout << "Generated Ciphertext" << endl;
+								ty = "Vignere's Encryption";
 							}
 
 							CIPHERTEXT = TTF_RenderText_Solid(TEXT, res.c_str(), textColor); //Surface = Canvas
 							KEY = TTF_RenderText_Solid(TEXT, Key.c_str(), textColor); //Surface = Canvas
+							TYPE = TTF_RenderText_Solid(TEXT_XS, ty.c_str(), textColor); //Surface = Canvas
 
 							DP_CT = SDL_CreateTextureFromSurface(R, CIPHERTEXT);
+							DP_TY = SDL_CreateTextureFromSurface(R, TYPE);
 							DP_KY = SDL_CreateTextureFromSurface(R, KEY);
 
 							SDL_QueryTexture(DP_CT, NULL, NULL, &name->w, &name->h);
 							SDL_QueryTexture(DP_KY, NULL, NULL, &key->w, &key->h);
+							SDL_QueryTexture(DP_TY, NULL, NULL, &type->w, &type->h);
 
 							name->x = WIDTH / 2 - name->w / 2; name->y = HEIGHT / 3 - name->h / 2;
 							key->x = WIDTH / 2 - key->w / 2; key->y = HEIGHT / 4 - 100;
+							type->x = 32; type ->y = HEIGHT - (type->h*3)/2;
 
 							string timekeep = "";
 
@@ -456,20 +486,14 @@ int main() {
 									if (list.at(i) == 1) {
 										SDL_RenderCopy(R, CRCT, NULL, &rcnts.at(i));
 									}
-
-									cout << SDL_GetError() << " | Recents Bar " << endl;
 								}
 
 								SDL_RenderCopy(R, DP_CT, NULL, name);
-								cout << SDL_GetError() << " | Rendering CIPHERTEXT " << endl;
 								SDL_RenderCopy(R, DP_KY, NULL, key);
-								cout << SDL_GetError() << " | Render KEY " << endl;
 								SDL_RenderCopy(R, DP_TM, NULL, tm);
-
-								cout << SDL_GetError() << " | Render Time " << endl;
+								SDL_RenderCopy(R, DP_TY, NULL, type);
 
 								SDL_RenderPresent(R);
-								cout << SDL_GetError() << " | Render Present " << endl;
 
 								if (frames % 144 == 0) {
 									seconds++;
