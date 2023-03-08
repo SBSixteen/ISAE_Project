@@ -21,6 +21,8 @@ Button* button[6];
 
 Mouse* MenuMouse;
 
+bool toggle_bg = false;
+
 void menuUpdate() {
 	for (Button* n : button) {
 		n->checkSel(MenuMouse);
@@ -79,6 +81,8 @@ int main() {
 
 		FPS = 144, delay = 1000 / FPS; //Pure Frametime,
 
+	cout << WIDTH << " x " << HEIGHT << " | Desktop Resolution" << endl;
+
 	//1 fps = 1tick
 
 	Uint32 frame_start;
@@ -87,6 +91,8 @@ int main() {
 	SDL_Surface* WindowSurface;
 
 	srand(time(0));
+
+	//cout << GameModes::Vignere_E("ABC", "ABC") << endl;
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		cout << "SDL Failed to initialize. Error Code : " << SDL_GetError() << endl;
@@ -111,7 +117,8 @@ int main() {
 		std::cout << "Renderer Initialized" << std::endl;
 	}
 
-	SDL_SetWindowFullscreen(window, false);
+	SDL_RenderSetLogicalSize(R, WIDTH, HEIGHT);
+	SDL_SetWindowFullscreen(window, SDL_FALSE);
 	SDL_SetWindowResizable(window, SDL_FALSE);
 
 	bool fullscreen = false;
@@ -154,12 +161,14 @@ int main() {
 	vector<SDL_Rect> rcnts;
 	vector<int> list;
 
-	for (int i = 0; i < 5; i++) {
+	int recent_limit = 10;
+
+	for (int i = 0; i < recent_limit; i++) {
 		SDL_Rect G;
-		G.x = 1400 + i * 96;
-		G.y = 15;
-		G.w = 64;
-		G.h = 64;
+		G.x = (WIDTH)-32;
+		G.y = 15+(i*48);
+		G.w = 32;
+		G.h = 32;
 		rcnts.push_back(G);
 		list.push_back(-1);
 	}
@@ -181,6 +190,13 @@ int main() {
 	TTF_Font* TEXT = TTF_OpenFont("DAGGERSQUARE.otf", 128);
 	TTF_Font* TEXT_S = TTF_OpenFont("DAGGERSQUARE.otf", 64);
 	TTF_Font* TEXT_XS = TTF_OpenFont("DAGGERSQUARE.otf", 32);
+
+	SDL_Color UI_Color;
+	UI_Color.r = 255;
+	UI_Color.g = 255;
+	UI_Color.b = 255;
+
+	SDL_RenderSetIntegerScale(R, SDL_TRUE);
 
 	while (menu) {
 		frame_start = SDL_GetTicks();
@@ -252,6 +268,12 @@ int main() {
 
 						SDL_Event f;
 
+						list.clear();
+
+						for (int i = 0; i < recent_limit; i++) {
+							list.push_back(-1);
+						}
+
 						while (playstate)
 						{
 							while (SDL_PollEvent(&e)) {
@@ -273,12 +295,31 @@ int main() {
 							textColor.g = g;
 							textColor.b = b;
 
-							string res = GameModes::Caesar();
+							string res = GameModes::get_Word();
 
-							int Key = rand() % 26;
+							int s_gamemode = rand() % 2;
+
+							string Key = "";
+							string x = "";
+
+							cout << s_gamemode << endl;
+
+							if (s_gamemode == 0) {
+								int k = rand() % 26;
+								Key = to_string(k);
+								x = GameModes::Caesar_E(k, res);
+							}
+
+							if (s_gamemode == 1) {
+								cout << "Doing Vignere" << endl;
+								Key = GameModes::Vignere_K();
+								cout << "Key Made" << endl;
+								x = GameModes::Vignere_E(Key, res);
+								cout << "Generated Ciphertext" << endl;
+							}
 
 							CIPHERTEXT = TTF_RenderText_Solid(TEXT, res.c_str(), textColor); //Surface = Canvas
-							KEY = TTF_RenderText_Solid(TEXT, to_string(Key).c_str(), textColor); //Surface = Canvas
+							KEY = TTF_RenderText_Solid(TEXT, Key.c_str(), textColor); //Surface = Canvas
 
 							DP_CT = SDL_CreateTextureFromSurface(R, CIPHERTEXT);
 							DP_KY = SDL_CreateTextureFromSurface(R, KEY);
@@ -291,13 +332,10 @@ int main() {
 
 							string timekeep = "";
 
-							string x = GameModes::Caesar_E(Key, res);
-
 							bool renderText = false;
 							string inputText = "";
 
 							while (rehash) {
-
 								if (Mix_PlayingMusic() == 0) {
 									m = rand() % 3;
 									Mix_PlayMusic(G[m], 0);
@@ -308,7 +346,6 @@ int main() {
 								SDL_RenderClear(R);
 
 								cout << SDL_GetError() << " | After Render Clear " << endl;
-
 
 								while (SDL_PollEvent(&f) != 0) {
 									cout << SDL_GetError() << " | Polling Start " << endl;
@@ -343,11 +380,11 @@ int main() {
 											cout << x << endl;
 											list.pop_back();
 											if (x == inputText) {
-												cout << "Correct" << endl;
+												//cout << "Correct" << endl;
 												list.insert(list.begin(), 1);
 											}
 											else {
-												cout << "Try Again" << endl;
+												//cout << "Try Again" << endl;
 												//SDL_SetRenderDrawColor(R, 255, 0, 0, 255);
 												list.insert(list.begin(), 0);
 											}
@@ -358,6 +395,24 @@ int main() {
 										if (f.key.keysym.sym == SDLK_F11)
 										{
 											SDL_MinimizeWindow(window);
+										}
+
+										if (f.key.keysym.sym == SDLK_F10)
+										{
+											if (toggle_bg) {
+												toggle_bg = false;
+												SDL_SetRenderDrawColor(R, 255, 255, 255, 0xFF);
+												UI_Color.r = 0;
+												UI_Color.g = 0;
+												UI_Color.b = 0;
+											}
+											else {
+												toggle_bg = true;
+												SDL_SetRenderDrawColor(R, 0, 0, 0, 0xFF);
+												UI_Color.r = 255;
+												UI_Color.g = 255;
+												UI_Color.b = 255;
+											}
 										}
 
 										if (f.key.keysym.sym == SDLK_ESCAPE)
@@ -372,7 +427,7 @@ int main() {
 									cout << SDL_GetError() << " | Polling End " << endl;
 								}
 								timekeep = time_string(seconds, minutes, hours);
-								TIME = TTF_RenderText_Solid(TEXT_S, timekeep.c_str(), { 255,255,255 }); //Surface = Canvas
+								TIME = TTF_RenderText_Solid(TEXT_S, timekeep.c_str(), UI_Color); //Surface = Canvas
 								DP_TM = SDL_CreateTextureFromSurface(R, TIME);
 								SDL_QueryTexture(DP_TM, NULL, NULL, &tm->w, &tm->h);
 								tm->x = WIDTH / 2 - tm->w / 2; tm->y = 15;
@@ -380,7 +435,7 @@ int main() {
 								cout << SDL_GetError() << " | TimeTexture " << endl;
 
 								if (inputText.length() > 0) {
-									ANSWER = TTF_RenderText_Solid(TEXT, inputText.c_str(), { 255,255,255 }); //Surface = Canvas
+									ANSWER = TTF_RenderText_Solid(TEXT, inputText.c_str(), UI_Color); //Surface = Canvas
 									DP_UI = SDL_CreateTextureFromSurface(R, ANSWER);
 									SDL_QueryTexture(DP_UI, NULL, NULL, &ui->w, &ui->h);
 									ui->x = WIDTH / 2 - ui->w / 2; ui->y = HEIGHT / 2;
@@ -391,7 +446,7 @@ int main() {
 									cout << SDL_GetError() << " | Render User Answer " << endl;
 								}
 
-								for (int i = 0; i < 5; i++) {
+								for (int i = 0; i < recent_limit; i++) {
 									if (list.at(i) == -1) {
 										SDL_RenderCopy(R, NONE, NULL, &rcnts.at(i));
 									}
@@ -427,15 +482,13 @@ int main() {
 									}
 								}
 
-
 								SDL_RenderPresent(R);
 								cout << SDL_GetError() << " | Start of Texture Cleaning " << endl;
 
 								SDL_FreeSurface(TIME);
 								SDL_DestroyTexture(DP_TM);
 
-
-								SDL_Delay(5);
+								SDL_Delay(7);
 
 								frames++;
 							}

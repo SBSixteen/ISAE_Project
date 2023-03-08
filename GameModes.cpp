@@ -6,7 +6,7 @@ GameModes::GameModes()
 {
 }
 
-string GameModes::Caesar()
+string GameModes::get_Word()
 {
 	string result;
 
@@ -43,4 +43,42 @@ string GameModes::Caesar_E(int key, string c) {
 	}
 
 	return c;
+}
+
+string GameModes::Vignere_K()
+{
+	string A = "";
+	
+	int m = rand() % 26;
+	int len = (rand() % 10) + 1;
+	char g = 'A';
+
+	for (int i = 0; i < len; i++) {
+
+		g = 'A' + m;
+		A += g;
+		g = 'A';
+		m = rand() % 26;
+	}
+
+	cout << A << endl;
+
+	return A;
+}
+
+string GameModes::Vignere_E(string K, string R)
+{
+	string A = "";
+	int j = 0;
+
+	for (int i = 0; i < R.length();i++) {
+
+		A += ((K[i % K.length()] - 65) + (R[i] - 65)) % 26;
+		A[i] = A[i] + 65;
+	}
+
+	cout << A << endl;
+
+	return A;
+
 }

@@ -10,8 +10,10 @@ class GameModes
 {
 public:
 	GameModes();
-	static string Caesar();
+	static string get_Word();
 	static string Caesar_E(int key, string p);
+	static string Vignere_K();
+	static string Vignere_E(string k, string r);
 };
 
 #pragma once
