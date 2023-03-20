@@ -403,6 +403,7 @@ int main() {
 					Play_: //Inspiration from portal || ORANGE PORTAL <-
 						Mix_HaltMusic();
 						playstate = true;
+						toggle_dt = false;
 						int frames = 0;
 						hours = 0; minutes = 0; seconds = 0;
 
@@ -549,6 +550,9 @@ int main() {
 												//cout << "Correct" << endl;
 												list.insert(list.begin(), 1);
 												score++;
+												if (toggle_dt) {
+													toggle_dt = false;
+												}
 											}
 											else {
 												//cout << "Try Again" << endl;
@@ -587,7 +591,7 @@ int main() {
 
 												for (int i = 0; i < 10; i++) {
 													SDL_DestroyTexture(DP_NM[i]);
-													NUM = TTF_RenderText_Solid(NUMBERS, to_string(i).c_str(), NM_Color); //Surface = Canvas
+													NUM = TTF_RenderText_Blended(NUMBERS, to_string(i).c_str(), NM_Color); //Surface = Canvas
 													DP_NM[i] = SDL_CreateTextureFromSurface(R, NUM);
 
 													SDL_FreeSurface(NUM);
@@ -600,13 +604,13 @@ int main() {
 												UI_Color.g = 255;
 												UI_Color.b = 255;
 
-												NM_Color.r = rand() % 129;
-												NM_Color.g = rand() % 129;
-												NM_Color.b = rand() % 129;
+												NM_Color.r = 255;
+												NM_Color.g = 255;
+												NM_Color.b = 255;
 
 												for (int i = 0; i < 10; i++) {
 													SDL_DestroyTexture(DP_NM[i]);
-													NUM = TTF_RenderText_Solid(NUMBERS, to_string(i).c_str(), NM_Color); //Surface = Canvas
+													NUM = TTF_RenderText_Blended(NUMBERS, to_string(i).c_str(), NM_Color); //Surface = Canvas
 													DP_NM[i] = SDL_CreateTextureFromSurface(R, NUM);
 
 													SDL_FreeSurface(NUM);
