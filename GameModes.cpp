@@ -48,13 +48,12 @@ string GameModes::Caesar_E(int key, string c) {
 string GameModes::Vignere_K()
 {
 	string A = "";
-	
+
 	int m = rand() % 26;
 	int len = (rand() % 10) + 1;
 	char g = 'A';
 
 	for (int i = 0; i < len; i++) {
-
 		g = 'A' + m;
 		A += g;
 		g = 'A';
@@ -71,8 +70,7 @@ string GameModes::Vignere_E(string K, string R)
 	string A = "";
 	int j = 0;
 
-	for (int i = 0; i < R.length();i++) {
-
+	for (int i = 0; i < R.length(); i++) {
 		A += ((K[i % K.length()] - 65) + (R[i] - 65)) % 26;
 		A[i] = A[i] + 65;
 	}
@@ -80,5 +78,4 @@ string GameModes::Vignere_E(string K, string R)
 	cout << A << endl;
 
 	return A;
-
 }
