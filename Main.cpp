@@ -219,7 +219,7 @@ int main() {
 	SDL_Rect* V = new SDL_Rect();
 	SDL_Surface* Version;
 	SDL_Texture* DP_VR;
-	string ver = "ReHash 0.5 | UI & UX Update";
+	string ver = "ReHash 0.5.1 | Decryption Update";
 	Version = TTF_RenderText_Blended(TEXT_XXS, ver.c_str(), { 255,255,255 }); //Surface = Canvas
 	DP_VR = SDL_CreateTextureFromSurface(R, Version);
 	SDL_QueryTexture(DP_VR, NULL, NULL, &V->w, &V->h);
