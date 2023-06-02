@@ -167,13 +167,14 @@ int main() {
 	SDL_Texture* WRNG = Texture_Handler::Load("Assets/Block/Wrong.png", R);
 
 	//Music
-	Mix_Music* Gameplay = Mix_LoadMUS("Sounds/ID3.mp3");
+	Mix_Music* Gameplay = Mix_LoadMUS("Sousnds/ID3.mp3");
 	Mix_Music* G[3];// Mix_LoadMUS("Sounds/ID3.mp3");
+	Mix_Music* correct_effect = Mix_LoadMUS("Sounds/SUCCESS.mp3");
 
 	//Music Array for Random Tracks through index
-	G[0] = Mix_LoadMUS("Sounds/ID4.mp3");
-	G[1] = Mix_LoadMUS("Sounds/ID2.mp3");
-	G[2] = Mix_LoadMUS("Sounds/ID1.mp3");
+	G[0] = Mix_LoadMUS("Soundsv/ID4.mp3");
+	G[1] = Mix_LoadMUS("Soundvs/ID2.mp3");
+	G[2] = Mix_LoadMUS("Sounvds/ID1.mp3");
 
 	Mix_PlayMusic(Gameplay, -1);
 
@@ -227,6 +228,12 @@ int main() {
 	V->x = WIDTH / 2 - (V->w / 2);
 	V->y = 16;
 
+	//Helptext Display
+	SDL_Rect* helptext = new SDL_Rect();
+	SDL_Surface* HELPTEXT;
+	SDL_Texture* DP_HT; // HT -> Helptext at the bottom of the screen
+	string htxt = "F1 : Help | F9 : Toggle Experimental Effects | F10 : Switch Contrast | F11 : Minimize";
+	
 	//User Input Color
 	SDL_Color UI_Color;
 	UI_Color.r = 255;
@@ -252,8 +259,9 @@ int main() {
 	SDL_Rect* key = new SDL_Rect(); //Rect for encrrypt/decrypt key
 	SDL_Rect* tm = new SDL_Rect(); //Rect for Time
 	SDL_Rect* ui = new SDL_Rect(); //Rect for User Input
-	SDL_Rect* type = new SDL_Rect(); //Rect for 
+	SDL_Rect* type = new SDL_Rect(); //Rect for
 	SDL_Rect* number[distract]; //Rect for the random numbers array;
+
 
 	bool n_show[distract];
 
@@ -264,6 +272,7 @@ int main() {
 	SDL_Surface* CIPHERTEXT;
 	SDL_Surface* TYPE;
 	SDL_Surface* NUM;
+
 
 	//Generated Textures are stored over here
 	SDL_Texture* DP_CT; //CT -> Ciphertext
@@ -330,15 +339,11 @@ int main() {
 		SDL_RenderCopy(R, BG, NULL, NULL);
 		SDL_RenderCopy(R, DP_VR, NULL, V);
 
-
-
 		//Register User Input
 		while (SDL_PollEvent(&e)) {
-			
-;
+			;
 
 			switch (e.type) {
-
 			case SDL_QUIT:
 				break;
 
@@ -354,7 +359,7 @@ int main() {
 					if (menu_nav < 0) {
 						menu_nav = 5;
 					}
-				//	cout << "Can use mouse? -> " << mouse_active << endl;
+					//	cout << "Can use mouse? -> " << mouse_active << endl;
 				}
 				if (e.key.keysym.sym == SDLK_UP) {
 					//cout << "Recorded Button up :" << menu_nav << endl;
@@ -365,8 +370,6 @@ int main() {
 					}
 				}
 				if (e.key.keysym.sym == SDLK_RETURN) {
-					
-
 					if (menu_nav == 5) {
 						goto Play_; //Inspiration from portal || BLUE PORTAL ->
 					}
@@ -379,12 +382,10 @@ int main() {
 			case SDL_MOUSEBUTTONUP:
 
 				if (e.button.button == SDL_BUTTON_LEFT && mouse_active) {
-					
 					//How to play
 					if (button[2]->sel) {
-						
 					}
-					
+
 					//EXIT
 					if (button[3]->sel) {
 					Exit_:
@@ -399,7 +400,6 @@ int main() {
 
 					//Logo
 					if (button[5]->sel) {
-
 					Play_: //Inspiration from portal || ORANGE PORTAL <-
 						Mix_HaltMusic();
 						playstate = true;
@@ -461,7 +461,6 @@ int main() {
 								ty = "Vignere's Encryption";
 							}
 
-
 							if (s_gamemode == 2) {
 								int k = rand() % 26;
 								Key = to_string(k);
@@ -472,30 +471,33 @@ int main() {
 							}
 
 							if (s_gamemode == 3) {
-								
 								Key = GameModes::Vignere_K();
 								x = res;
 								res = GameModes::Vignere_E(Key, res);
 								ty = "Vingere's Decryption";
 							}
 
-							CIPHERTEXT = TTF_RenderText_Solid(TEXT, res.c_str(), textColor); //Surface = Canvas
-							KEY = TTF_RenderText_Solid(TEXT, Key.c_str(), textColor); //Surface = Canvas
-							TYPE = TTF_RenderText_Solid(TEXT_XS, ty.c_str(), textColor); //Surface = Canvas
+							CIPHERTEXT = TTF_RenderText_Blended(TEXT, res.c_str(), textColor); //Surface = Canvas
+							KEY = TTF_RenderText_Blended(TEXT, Key.c_str(), textColor); //Surface = Canvas
+							TYPE = TTF_RenderText_Blended(TEXT_XS, ty.c_str(), textColor); //Surface = Canvas
+							HELPTEXT = TTF_RenderText_Blended(TEXT_XXS, htxt.c_str(), textColor);
 
 							DP_CT = SDL_CreateTextureFromSurface(R, CIPHERTEXT);
 							DP_TY = SDL_CreateTextureFromSurface(R, TYPE);
 							DP_KY = SDL_CreateTextureFromSurface(R, KEY);
+							DP_HT = SDL_CreateTextureFromSurface(R, HELPTEXT);
 
 							SDL_QueryTexture(DP_CT, NULL, NULL, &name->w, &name->h);
 							SDL_QueryTexture(DP_KY, NULL, NULL, &key->w, &key->h);
 							SDL_QueryTexture(DP_TY, NULL, NULL, &type->w, &type->h);
+							SDL_QueryTexture(DP_HT, NULL, NULL, &helptext->w, &helptext->h);
 
 							SDL_FreeSurface(TYPE);
 
 							name->x = WIDTH / 2 - name->w / 2; name->y = HEIGHT / 3 - name->h / 2;
 							key->x = WIDTH / 2 - key->w / 2; key->y = HEIGHT / 4 - 100;
 							type->x = 32; type->y = HEIGHT - (type->h * 3) / 2;
+							helptext->x = WIDTH / 2 - helptext->w / 2; helptext->y = HEIGHT - (helptext->h * 3) / 2;
 
 							string timekeep = "";
 
@@ -550,6 +552,7 @@ int main() {
 												//cout << "Correct" << endl;
 												list.insert(list.begin(), 1);
 												score++;
+												Mix_PlayMusic(correct_effect, 0);
 												if (toggle_dt) {
 													toggle_dt = false;
 												}
@@ -559,7 +562,7 @@ int main() {
 												//SDL_SetRenderDrawColor(R, 255, 0, 0, 255);
 												list.insert(list.begin(), 0);
 												if (!toggle_dt) {
-													toggle_dt = true;
+													//toggle_dt = true;
 												}
 											}
 
@@ -623,7 +626,7 @@ int main() {
 											rehash = false;
 											playstate = false;
 											Mix_HaltMusic();
-											Mix_PlayMusic(Gameplay, -1);
+											//Mix_PlayMusic(Gameplay, -1);
 										}
 									}
 
@@ -653,7 +656,7 @@ int main() {
 									}
 								}
 
-								//Render userinput only when 
+								//Render userinput only when
 								if (inputText.length() > 0) {
 									ANSWER = TTF_RenderText_Solid(TEXT, inputText.c_str(), UI_Color); //Surface = Canvas
 									DP_UI = SDL_CreateTextureFromSurface(R, ANSWER);
@@ -684,10 +687,10 @@ int main() {
 								SDL_RenderCopy(R, DP_KY, NULL, key);
 								SDL_RenderCopy(R, DP_TM, NULL, tm);
 								SDL_RenderCopy(R, DP_TY, NULL, type);
+								SDL_RenderCopy(R, DP_HT, NULL, helptext);
 
 								//Change numbers of Cells in Distractions
 								if (toggle_dt) {
-
 									for (int i = 0; i < distract; i++) {
 										if (frames % 16 == 0) {
 											gen[i] = rand() % 10;
@@ -698,10 +701,7 @@ int main() {
 											SDL_RenderCopy(R, DP_NM[gen[i]], NULL, number[i]);
 										}
 									}
-
 								}
-
-
 
 								SDL_RenderPresent(R);
 
@@ -776,5 +776,4 @@ int main() {
 	TTF_CloseFont(TEXT_XS);
 	TTF_CloseFont(TEXT_XXS);
 	TTF_CloseFont(NUMBERS);
-
 }
