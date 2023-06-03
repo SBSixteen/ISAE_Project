@@ -27,6 +27,7 @@ int symposium_limit = 5;
 
 bool toggle_bg = true;
 bool toggle_dt = false;
+bool toggle_help = false;
 
 int menu_nav = -1;
 
@@ -165,6 +166,8 @@ int main() {
 	SDL_Texture* NONE = Texture_Handler::Load("Assets/Block/Unknown.png", R);
 	SDL_Texture* CRCT = Texture_Handler::Load("Assets/Block/Correct.png", R);
 	SDL_Texture* WRNG = Texture_Handler::Load("Assets/Block/Wrong.png", R);
+	SDL_Texture* Help_Caeser = Texture_Handler::Load("Assets/Block/Help_Caesar.png", R);
+	SDL_Texture* Help_Vignere = Texture_Handler::Load("Assets/Block/Help_Vignere.png", R);
 
 	//Music
 	Mix_Music* Gameplay = Mix_LoadMUS("Sousnds/ID3.mp3");
@@ -220,7 +223,7 @@ int main() {
 	SDL_Rect* V = new SDL_Rect();
 	SDL_Surface* Version;
 	SDL_Texture* DP_VR;
-	string ver = "ReHash 0.5.1 | Decryption Update";
+	string ver = "ReHash 0.5.3 | Helping Hands Update";
 	Version = TTF_RenderText_Blended(TEXT_XXS, ver.c_str(), { 255,255,255 }); //Surface = Canvas
 	DP_VR = SDL_CreateTextureFromSurface(R, Version);
 	SDL_QueryTexture(DP_VR, NULL, NULL, &V->w, &V->h);
@@ -577,6 +580,35 @@ int main() {
 										if (f.key.keysym.sym == SDLK_F9)
 										{
 											toggle_dt = !toggle_dt;
+										}
+
+										if (f.key.keysym.sym == SDLK_F1)
+										{
+											toggle_help = !toggle_help;
+
+											while (toggle_help) {
+
+												while (SDL_PollEvent(&f) != 0) {
+
+													if (f.type == SDL_KEYDOWN)
+													{
+														if (f.key.keysym.sym == SDLK_F1)
+														{
+															toggle_help = false;
+														}
+													}
+
+												}
+
+												if (s_gamemode == 0 || s_gamemode == 2) {
+													SDL_RenderCopy(R, Help_Caeser, NULL, NULL);
+												}
+												if (s_gamemode == 1 || s_gamemode == 3) {
+													SDL_RenderCopy(R, Help_Vignere, NULL, NULL);
+												}
+												SDL_RenderPresent(R);
+
+											}
 										}
 
 										if (f.key.keysym.sym == SDLK_F10)
